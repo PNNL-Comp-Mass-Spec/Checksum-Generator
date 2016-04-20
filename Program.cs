@@ -34,7 +34,7 @@ namespace Checksum_Generator
 
 			try
 			{
-				bool success = false;
+				var success = false;
 
 				if (objParseCommandLine.ParseCommandLine())
 				{
@@ -71,10 +71,12 @@ namespace Checksum_Generator
 
 		private static bool ComputeChecksums(string fileMask, bool recurse, string outputFilePath, bool fullPathsInResults, bool previewMode)
 		{
+            var currentFile = "No file (processing has not yet started)";
+
 			try
 			{
-				string folderPath = ".";
-				int slashIndex = fileMask.LastIndexOf('\\');
+				var folderPath = ".";
+				var slashIndex = fileMask.LastIndexOf('\\');
 				if (slashIndex > -1)
 				{
 					// Extract the directory info from fileMask
@@ -100,7 +102,6 @@ namespace Checksum_Generator
 					}
 				}
 				
-
 				if (string.IsNullOrWhiteSpace(outputFilePath))
 					outputFilePath = "CheckSumFile_" + DateTime.Now.ToString("yyyy-MM-dd") + ".txt";
 
@@ -131,7 +132,6 @@ namespace Checksum_Generator
 					return false;
 				}
 
-
 				if (previewMode)
 				{
 					foreach (var fiFile in fiFiles)
@@ -141,8 +141,11 @@ namespace Checksum_Generator
 					return true;
 				}
 
+			    Console.WriteLine("Writing checksums to " + outputFilePath);
+			    var fiOutputFile = new FileInfo(outputFilePath);
+
 				// Create the output file
-				using (var swOutputFile = new StreamWriter(new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.Read)))
+                using (var swOutputFile = new StreamWriter(new FileStream(fiOutputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.Read)))
 				{
 					swOutputFile.AutoFlush = true;
 					swOutputFile.WriteLine("MD5\tSHA1\tBytes\tFilename");
@@ -152,12 +155,16 @@ namespace Checksum_Generator
 						ThrowEvents = false
 					};
 
-					int filesProcessed = 0;
+					var filesProcessed = 0;
 
 					foreach (var fiFile in fiFiles)
 					{
-						string md5 = ComputeMD5(checkSumGenerator, fiFile);
-						string sha1 = ComputeSha1(checkSumGenerator, fiFile);
+                        if (string.Equals(fiOutputFile.FullName, fiFile.FullName, StringComparison.InvariantCultureIgnoreCase))
+					        continue;
+
+                        currentFile = fiFile.FullName;
+						var md5 = ComputeMD5(checkSumGenerator, fiFile);
+						var sha1 = ComputeSha1(checkSumGenerator, fiFile);
 
 						if (fullPathsInResults)
 							swOutputFile.WriteLine(md5 + "\t" + sha1 + "\t" + fiFile.Length + "\t" + fiFile.FullName);
@@ -171,11 +178,47 @@ namespace Checksum_Generator
 
 				}
 
-				return true;
+                currentFile = "No file (processing complete)";
+			    Thread.Sleep(250);
+
+                Console.WriteLine();
+			    Console.WriteLine("Results:");
+
+                // Re-open the file and show the first 5 lines
+			    using (var srChecksumFile = new StreamReader(new FileStream(outputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+			    {
+                    // Set this to negative one to account for the header line
+			        var filesProcessed = -1;
+			        var FILES_TO_SHOW = 4;
+
+			        while (!srChecksumFile.EndOfStream)
+			        {
+			            var dataLine = srChecksumFile.ReadLine();
+			            if (string.IsNullOrWhiteSpace(dataLine))
+			                continue;
+
+                        filesProcessed++;
+                        if (filesProcessed <= FILES_TO_SHOW)
+			            {
+                            Console.WriteLine(dataLine);
+			            }
+			        }
+
+			        var additionalFiles = filesProcessed - FILES_TO_SHOW;
+			        if (additionalFiles > 0)
+			        {
+                        if (additionalFiles == 1)
+                            Console.WriteLine("... plus 1 more file");
+                        else
+			                Console.WriteLine("... plus " + additionalFiles + " others");
+			        }
+			    }
+
+			    return true;
 			}
 			catch (Exception ex)
 			{
-				ShowErrorMessage("Error computing checksums: " + ex.Message);
+                ShowErrorMessage("Error computing checksums, file " + currentFile + ": " + ex.Message + Environment.NewLine + ex.StackTrace);                
 				return false;
 			}
 
@@ -207,7 +250,7 @@ namespace Checksum_Generator
 				if (objParseCommandLine.InvalidParametersPresent(lstValidParameters))
 				{
 					var badArguments = new List<string>();
-					foreach (string item in objParseCommandLine.InvalidParameters(lstValidParameters))
+					foreach (var item in objParseCommandLine.InvalidParameters(lstValidParameters))
 					{
 						badArguments.Add("/" + item);
 					}
@@ -284,9 +327,9 @@ namespace Checksum_Generator
 			Console.WriteLine();
 			Console.WriteLine(strSeparator);
 			Console.WriteLine(strTitle);
-			string strMessage = strTitle + ":";
+			var strMessage = strTitle + ":";
 
-			foreach (string item in items)
+			foreach (var item in items)
 			{
 				Console.WriteLine("   " + item);
 				strMessage += " " + item;
@@ -300,7 +343,7 @@ namespace Checksum_Generator
 
 		private static void ShowProgramHelp()
 		{
-			string exeName = System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+			var exeName = System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
 			try
 			{
@@ -317,7 +360,7 @@ namespace Checksum_Generator
 
 
 				Console.WriteLine();
-				Console.WriteLine("FileMask specifies the files to compute the checksums for, e.g. *.raw");
+                Console.WriteLine("FileMask specifies the files to compute the checksums, for example, *.raw");
 				Console.WriteLine(@"FileMask can optionally include a folder path, e.g. C:\temp\*.raw");
 				Console.WriteLine();
 				Console.WriteLine("Use /S to process files in all subfolders");
