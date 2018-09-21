@@ -2,31 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using FileProcessor;
+using PRISM;
 
 namespace Checksum_Generator
 {
     class Program
     {
-        private const string PROGRAM_DATE = "December 9, 2013";
+        private const string PROGRAM_DATE = "September 21, 2018";
 
         static double mPercentComplete;
 
         private static string mFileMask;
         private static bool mRecurse;
-        
+
         private static string mOutputFilePath;
         private static bool mFullPathsInResults;
 
         private static bool mPreviewMode;
 
-        static int Main(string[] args)
+        static int Main()
         {
-            var objParseCommandLine = new FileProcessor.clsParseCommandLine();
+            var commandLineParser = new clsParseCommandLine();
 
             mFileMask = string.Empty;
             mRecurse = false;
-            
+
             mOutputFilePath = string.Empty;
             mFullPathsInResults = false;
 
@@ -36,15 +36,15 @@ namespace Checksum_Generator
             {
                 var success = false;
 
-                if (objParseCommandLine.ParseCommandLine())
+                if (commandLineParser.ParseCommandLine())
                 {
-                    if (SetOptionsUsingCommandLineParameters(objParseCommandLine))
+                    if (SetOptionsUsingCommandLineParameters(commandLineParser))
                         success = true;
                 }
 
                 if (!success ||
-                    objParseCommandLine.NeedToShowHelp ||
-                    objParseCommandLine.ParameterCount + objParseCommandLine.NonSwitchParameterCount == 0)
+                    commandLineParser.NeedToShowHelp ||
+                    commandLineParser.ParameterCount + commandLineParser.NonSwitchParameterCount == 0)
                 {
                     ShowProgramHelp();
                     return -1;
@@ -101,7 +101,7 @@ namespace Checksum_Generator
                         fileMask = "*.*";
                     }
                 }
-                
+
                 if (string.IsNullOrWhiteSpace(outputFilePath))
                     outputFilePath = "CheckSumFile_" + DateTime.Now.ToString("yyyy-MM-dd") + ".txt";
 
@@ -218,28 +218,28 @@ namespace Checksum_Generator
             }
             catch (Exception ex)
             {
-                ShowErrorMessage("Error computing checksums, file " + currentFile + ": " + ex.Message + Environment.NewLine + ex.StackTrace);                
+                ShowErrorMessage("Error computing checksums, file " + currentFile + ": " + ex.Message, ex);
                 return false;
             }
 
         }
 
-        private static string ComputeSha1(clsChecksum checkSumGenerator, FileInfo fiFile)
+        private static string ComputeSha1(clsChecksum checkSumGenerator, FileSystemInfo fiFile)
         {
             return checkSumGenerator.GenerateSha1Hash(fiFile.FullName);
         }
 
-        private static string ComputeMD5(clsChecksum checkSumGenerator, FileInfo fiFile)
+        private static string ComputeMD5(clsChecksum checkSumGenerator, FileSystemInfo fiFile)
         {
             return checkSumGenerator.GenerateMD5Hash(fiFile.FullName);
         }
 
         private static string GetAppVersion()
         {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString() + " (" + PROGRAM_DATE + ")";
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version + " (" + PROGRAM_DATE + ")";
         }
 
-        private static bool SetOptionsUsingCommandLineParameters(FileProcessor.clsParseCommandLine objParseCommandLine)
+        private static bool SetOptionsUsingCommandLineParameters(clsParseCommandLine commandLineParser)
         {
             // Returns True if no problems; otherwise, returns false
             var lstValidParameters = new List<string> { "I", "O", "F", "S", "Preview" };
@@ -247,37 +247,37 @@ namespace Checksum_Generator
             try
             {
                 // Make sure no invalid parameters are present
-                if (objParseCommandLine.InvalidParametersPresent(lstValidParameters))
+                if (commandLineParser.InvalidParametersPresent(lstValidParameters))
                 {
                     var badArguments = new List<string>();
-                    foreach (var item in objParseCommandLine.InvalidParameters(lstValidParameters))
+                    foreach (var item in commandLineParser.InvalidParameters(lstValidParameters))
                     {
                         badArguments.Add("/" + item);
                     }
 
-                    ShowErrorMessage("Invalid commmand line parameters", badArguments);
+                    ShowErrorMessage("Invalid command line parameters", badArguments);
 
                     return false;
                 }
 
-                // Query objParseCommandLine to see if various parameters are present						
+                // Query commandLineParser to see if various parameters are present
 
-                if (objParseCommandLine.NonSwitchParameterCount > 0)
-                    mFileMask = objParseCommandLine.RetrieveNonSwitchParameter(0);
+                if (commandLineParser.NonSwitchParameterCount > 0)
+                    mFileMask = commandLineParser.RetrieveNonSwitchParameter(0);
 
-                if (!ParseParameter(objParseCommandLine, "I", "a filemask specification", ref mFileMask)) return false;
+                if (!ParseParameter(commandLineParser, "I", "a file mask specification", ref mFileMask)) return false;
 
-                if (!ParseParameter(objParseCommandLine, "O", "an output file path", ref mOutputFilePath)) return false;
+                if (!ParseParameter(commandLineParser, "O", "an output file path", ref mOutputFilePath)) return false;
 
-                if (objParseCommandLine.IsParameterPresent("F"))
+                if (commandLineParser.IsParameterPresent("F"))
                     mFullPathsInResults = true;
 
-                if (objParseCommandLine.IsParameterPresent("Preview"))
+                if (commandLineParser.IsParameterPresent("Preview"))
                 {
                     mPreviewMode = true;
                 }
 
-                if (objParseCommandLine.IsParameterPresent("S"))
+                if (commandLineParser.IsParameterPresent("S"))
                 {
                     mRecurse = true;
                 }
@@ -286,16 +286,15 @@ namespace Checksum_Generator
             }
             catch (Exception ex)
             {
-                ShowErrorMessage("Error parsing the command line parameters: " + Environment.NewLine + ex.Message);
+                ShowErrorMessage("Error parsing the command line parameters: " + ex.Message, ex);
             }
 
             return false;
         }
 
-        private static bool ParseParameter(clsParseCommandLine objParseCommandLine, string parameterName, string description, ref string targetVariable)
+        private static bool ParseParameter(clsParseCommandLine commandLineParser, string parameterName, string description, ref string targetVariable)
         {
-            string value;
-            if (objParseCommandLine.RetrieveValueForParameter(parameterName, out value))
+            if (commandLineParser.RetrieveValueForParameter(parameterName, out var value))
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
@@ -307,43 +306,20 @@ namespace Checksum_Generator
             return true;
         }
 
-        private static void ShowErrorMessage(string strMessage)
+        private static void ShowErrorMessage(string message, Exception ex = null)
         {
-            const string strSeparator = "------------------------------------------------------------------------------";
-
-            Console.WriteLine();
-            Console.WriteLine(strSeparator);
-            Console.WriteLine(strMessage);
-            Console.WriteLine(strSeparator);
-            Console.WriteLine();
-
-            WriteToErrorStream(strMessage);
+            ConsoleMsgUtils.ShowError(message, ex);
         }
 
-        private static void ShowErrorMessage(string strTitle, IEnumerable<string> items)
+        private static void ShowErrorMessage(string title, IEnumerable<string> errorMessages)
         {
-            const string strSeparator = "------------------------------------------------------------------------------";
-
-            Console.WriteLine();
-            Console.WriteLine(strSeparator);
-            Console.WriteLine(strTitle);
-            var strMessage = strTitle + ":";
-
-            foreach (var item in items)
-            {
-                Console.WriteLine("   " + item);
-                strMessage += " " + item;
-            }
-            Console.WriteLine(strSeparator);
-            Console.WriteLine();
-
-            WriteToErrorStream(strMessage);
+            ConsoleMsgUtils.ShowErrors(title, errorMessages);
         }
 
 
         private static void ShowProgramHelp()
         {
-            var exeName = System.IO.Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var exeName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             try
             {
@@ -385,22 +361,6 @@ namespace Checksum_Generator
                 Console.WriteLine("Error displaying the program syntax: " + ex.Message);
             }
 
-        }
-
-        private static void WriteToErrorStream(string strErrorMessage)
-        {
-            try
-            {
-                using (var swErrorStream = new System.IO.StreamWriter(Console.OpenStandardError()))
-                {
-                    swErrorStream.WriteLine(strErrorMessage);
-                }
-            }
-            // ReSharper disable once EmptyGeneralCatchClause
-            catch
-            {
-                // Ignore errors here
-            }
         }
 
     }
