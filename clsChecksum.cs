@@ -39,9 +39,9 @@ namespace Checksum_Generator
         {
             byte[] byteHash;
 
-            //Verify input file exists
-            var fi = new FileInfo(filePath);
-            if (!fi.Exists)
+            // Verify input file exists
+            var targetFile = new FileInfo(filePath);
+            if (!targetFile.Exists)
             {
                 var msg = "File not found in GenerateMD5HashFromFile: " + filePath;
                 ReportError(msg);
@@ -51,8 +51,7 @@ namespace Checksum_Generator
                 return string.Empty;
             }
 
-
-            using (var sourceFile = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var sourceFile = new FileStream(targetFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Get the file's hash
                 byteHash = mMD5Hasher.ComputeHash(sourceFile);
@@ -73,9 +72,9 @@ namespace Checksum_Generator
         public string GenerateSha1Hash(string filePath)
         {
             byte[] fileHash;
-            var fi = new FileInfo(filePath);
+            var targetFile = new FileInfo(filePath);
 
-            if (!fi.Exists)
+            if (!targetFile.Exists)
             {
                 var msg = "File not found in GenerateSha1Hash: " + filePath;
                 ReportError(msg);
@@ -85,7 +84,7 @@ namespace Checksum_Generator
                 return string.Empty;
             }
 
-            using (var sourceFile = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var sourceFile = new FileStream(targetFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 fileHash = mSHA1Hasher.ComputeHash(sourceFile);
             }

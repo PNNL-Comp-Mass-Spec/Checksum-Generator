@@ -71,19 +71,20 @@ namespace Checksum_Generator
 
         private static bool ComputeChecksums(string fileMask, bool recurse, string outputFilePath, bool fullPathsInResults, bool previewMode)
         {
-            var currentFile = "No file (processing has not yet started)";
+            var currentFilePath = "No file (processing has not yet started)";
 
             try
             {
-                var folderPath = ".";
+                var directoryPath = ".";
+
                 var slashIndex = fileMask.LastIndexOf('\\');
                 if (slashIndex > -1)
                 {
                     // Extract the directory info from fileMask
-                    folderPath = fileMask.Substring(0, slashIndex);
+                    directoryPath = fileMask.Substring(0, slashIndex);
                     if (slashIndex >= fileMask.Length)
                     {
-                        Console.WriteLine("Note: FileMask ended in a slash; will process all files in " + folderPath);
+                        Console.WriteLine("Note: FileMask ended in a slash; will process all files in " + directoryPath);
                         fileMask = "*.*";
                     }
                     else
@@ -94,10 +95,10 @@ namespace Checksum_Generator
 
                 if (!(fileMask.Contains("*") || fileMask.Contains("?")))
                 {
-                    var testPath = Path.Combine(folderPath, fileMask);
+                    var testPath = Path.Combine(directoryPath, fileMask);
                     if (Directory.Exists(testPath))
                     {
-                        folderPath = testPath;
+                        directoryPath = testPath;
                         fileMask = "*.*";
                     }
                 }
@@ -106,49 +107,52 @@ namespace Checksum_Generator
                     outputFilePath = "CheckSumFile_" + DateTime.Now.ToString("yyyy-MM-dd") + ".txt";
 
                 var msg = "Looking for files matching " + fileMask;
-                if (folderPath == ".")
+                if (directoryPath == ".")
                     msg += " in the current directory";
                 else
-                    msg += " in folder " + folderPath;
+                    msg += " in directory " + directoryPath;
 
                 if (recurse)
                     msg += " and its subdirectories";
 
                 Console.WriteLine(msg);
 
-                var diFolder = new DirectoryInfo(folderPath);
+                var workingDirectory = new DirectoryInfo(directoryPath);
                 var searchOption = SearchOption.TopDirectoryOnly;
                 if (recurse)
                     searchOption = SearchOption.AllDirectories;
 
-                var fiFiles = diFolder.GetFiles(fileMask, searchOption);
+                Console.WriteLine(directoryPath);
+                Console.WriteLine(fileMask);
 
-                if (fiFiles.Length == 0)
+                var foundFiles = workingDirectory.GetFiles(fileMask, searchOption);
+
+                if (foundFiles.Length == 0)
                 {
-                    msg = "Did not find any files matching " + fileMask + " in " + diFolder.FullName;
+                    msg = "Did not find any files matching " + fileMask + " in " + workingDirectory.FullName;
                     if (recurse)
-                        msg += " or its subfolders";
+                        msg += " or its subdirectories";
                     ShowErrorMessage(msg);
                     return false;
                 }
 
                 if (previewMode)
                 {
-                    foreach (var fiFile in fiFiles)
+                    foreach (var currentFile in foundFiles)
                     {
-                        Console.WriteLine(fiFile.FullName);
+                        Console.WriteLine(currentFile.FullName);
                     }
                     return true;
                 }
 
                 Console.WriteLine("Writing checksums to " + outputFilePath);
-                var fiOutputFile = new FileInfo(outputFilePath);
+                var outputFile = new FileInfo(outputFilePath);
 
                 // Create the output file
-                using (var swOutputFile = new StreamWriter(new FileStream(fiOutputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.Read)))
+                using (var writer = new StreamWriter(new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.Read)))
                 {
-                    swOutputFile.AutoFlush = true;
-                    swOutputFile.WriteLine("MD5\tSHA1\tBytes\tFilename");
+                    writer.AutoFlush = true;
+                    writer.WriteLine("MD5\tSHA1\tBytes\tFilename");
 
                     var checkSumGenerator = new ChecksumGen
                     {
@@ -157,19 +161,19 @@ namespace Checksum_Generator
 
                     var filesProcessed = 0;
 
-                    foreach (var fiFile in fiFiles)
+                    foreach (var currentFile in foundFiles)
                     {
-                        if (string.Equals(fiOutputFile.FullName, fiFile.FullName, StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals(outputFile.FullName, currentFile.FullName, StringComparison.InvariantCultureIgnoreCase))
                             continue;
 
-                        currentFile = fiFile.FullName;
-                        var md5 = ComputeMD5(checkSumGenerator, fiFile);
-                        var sha1 = ComputeSha1(checkSumGenerator, fiFile);
+                        currentFilePath = currentFile.FullName;
+                        var md5 = ComputeMD5(checkSumGenerator, currentFile);
+                        var sha1 = ComputeSha1(checkSumGenerator, currentFile);
 
                         if (fullPathsInResults)
-                            swOutputFile.WriteLine(md5 + "\t" + sha1 + "\t" + fiFile.Length + "\t" + fiFile.FullName);
+                            writer.WriteLine(md5 + "\t" + sha1 + "\t" + currentFile.Length + "\t" + currentFile.FullName);
                         else
-                            swOutputFile.WriteLine(md5 + "\t" + sha1 + "\t" + fiFile.Length + "\t" + fiFile.Name);
+                            writer.WriteLine(md5 + "\t" + sha1 + "\t" + currentFile.Length + "\t" + currentFile.Name);
 
                         filesProcessed++;
                         mPercentComplete = filesProcessed / (float)fiFiles.Length * 100;
@@ -178,22 +182,22 @@ namespace Checksum_Generator
 
                 }
 
-                currentFile = "No file (processing complete)";
+                currentFilePath = "No file (processing complete)";
                 Thread.Sleep(250);
 
                 Console.WriteLine();
                 Console.WriteLine("Results:");
 
                 // Re-open the file and show the first 5 lines
-                using (var srChecksumFile = new StreamReader(new FileStream(outputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                using (var reader = new StreamReader(new FileStream(outputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     // Set this to negative one to account for the header line
                     var filesProcessed = -1;
                     var FILES_TO_SHOW = 4;
 
-                    while (!srChecksumFile.EndOfStream)
+                    while (!reader.EndOfStream)
                     {
-                        var dataLine = srChecksumFile.ReadLine();
+                        var dataLine = reader.ReadLine();
                         if (string.IsNullOrWhiteSpace(dataLine))
                             continue;
 
@@ -218,7 +222,7 @@ namespace Checksum_Generator
             }
             catch (Exception ex)
             {
-                ShowErrorMessage("Error computing checksums, file " + currentFile + ": " + ex.Message, ex);
+                ShowErrorMessage("Error computing checksums, file " + currentFilePath + ": " + ex.Message, ex);
                 return false;
             }
 
@@ -226,12 +230,12 @@ namespace Checksum_Generator
 
         private static string ComputeSha1(ChecksumGen checkSumGenerator, FileSystemInfo targetFile)
         {
-            return checkSumGenerator.GenerateSha1Hash(fiFile.FullName);
+            return checkSumGenerator.GenerateSha1Hash(targetFile.FullName);
         }
 
         private static string ComputeMD5(ChecksumGen checkSumGenerator, FileSystemInfo targetFile)
         {
-            return checkSumGenerator.GenerateMD5Hash(fiFile.FullName);
+            return checkSumGenerator.GenerateMD5Hash(targetFile.FullName);
         }
 
         private static string GetAppVersion()
