@@ -150,7 +150,7 @@ namespace Checksum_Generator
                     swOutputFile.AutoFlush = true;
                     swOutputFile.WriteLine("MD5\tSHA1\tBytes\tFilename");
 
-                    var checkSumGenerator = new clsChecksum
+                    var checkSumGenerator = new ChecksumGen
                     {
                         ThrowEvents = false
                     };
@@ -224,12 +224,12 @@ namespace Checksum_Generator
 
         }
 
-        private static string ComputeSha1(clsChecksum checkSumGenerator, FileSystemInfo fiFile)
+        private static string ComputeSha1(ChecksumGen checkSumGenerator, FileSystemInfo targetFile)
         {
             return checkSumGenerator.GenerateSha1Hash(fiFile.FullName);
         }
 
-        private static string ComputeMD5(clsChecksum checkSumGenerator, FileSystemInfo fiFile)
+        private static string ComputeMD5(ChecksumGen checkSumGenerator, FileSystemInfo targetFile)
         {
             return checkSumGenerator.GenerateMD5Hash(fiFile.FullName);
         }

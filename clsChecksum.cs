@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Checksum_Generator
 {
-    class clsChecksum : PRISM.EventNotifier
+    internal class ChecksumGen : PRISM.EventNotifier
     {
         public string ErrorMessage
         {
@@ -25,7 +25,7 @@ namespace Checksum_Generator
         /// <summary>
         /// Constructor
         /// </summary>
-        public clsChecksum()
+        public ChecksumGen()
         {
             ErrorMessage = string.Empty;
             ThrowEvents = false;
