@@ -48,7 +48,6 @@ namespace Checksum_Generator
                 {
                     ShowProgramHelp();
                     return -1;
-
                 }
 
                 success = ComputeChecksums(mFileMask, mRecurse, mOutputFilePath, mFullPathsInResults, mPreviewMode);
@@ -57,7 +56,6 @@ namespace Checksum_Generator
                     Thread.Sleep(1000);
                     return -2;
                 }
-
             }
             catch (Exception ex)
             {
@@ -188,7 +186,6 @@ namespace Checksum_Generator
                         var percentComplete = filesProcessed / (float)foundFiles.Length * 100;
                         Console.WriteLine(percentComplete.ToString("0.0") + "%: " + currentFile.Name);
                     }
-
                 }
 
                 currentFilePath = "No file (processing complete)";
@@ -234,7 +231,6 @@ namespace Checksum_Generator
                 ShowErrorMessage("Error computing checksums, file " + currentFilePath + ": " + ex.Message, ex);
                 return false;
             }
-
         }
 
         private static string ComputeSha1(ChecksumGen checkSumGenerator, FileSystemInfo targetFile)
@@ -329,7 +325,6 @@ namespace Checksum_Generator
             ConsoleMsgUtils.ShowErrors(title, errorMessages);
         }
 
-
         private static void ShowProgramHelp()
         {
             var exeName = Path.GetFileName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -346,7 +341,6 @@ namespace Checksum_Generator
                 Console.WriteLine();
                 Console.Write("Program syntax #2:" + Environment.NewLine + exeName);
                 Console.WriteLine(" /I:FileMask [/S] [/O:OutputFile] [/F] [/Preview]");
-
 
                 Console.WriteLine();
                 Console.WriteLine("FileMask specifies the files to compute the checksums, for example, *.raw");
@@ -367,14 +361,11 @@ namespace Checksum_Generator
 
                 // Delay for 750 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
                 Thread.Sleep(750);
-
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error displaying the program syntax: " + ex.Message);
             }
-
         }
-
     }
 }

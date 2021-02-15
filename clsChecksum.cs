@@ -65,9 +65,7 @@ namespace Checksum_Generator
             }
 
             return hashStrBld.ToString();
-
         }
-
 
         public string GenerateSha1Hash(string filePath)
         {
@@ -109,6 +107,5 @@ namespace Checksum_Generator
         {
             return BitConverter.ToString(buffer).Replace("-", string.Empty).ToLower();
         }
-
     }
 }
