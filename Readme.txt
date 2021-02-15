@@ -20,7 +20,7 @@ Use /Preview to view files that would be processed
 Written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA)
 Copyright 2013, Battelle Memorial Institute.  All Rights Reserved.
 
-E-mail: matthew.monroe@pnnl.gov or matt@alchemistmatt.com
+E-mail: matthew.monroe@pnnl.gov or proteomics@pnnl.gov
 Website: http://panomics.pnnl.gov/ or http://omics.pnl.gov
 -------------------------------------------------------------------------------
 
