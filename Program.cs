@@ -77,6 +77,15 @@ namespace Checksum_Generator
             {
                 var directoryPath = ".";
 
+                var colonIndex = fileMask.LastIndexOf(':');
+
+                if (colonIndex > 0 && fileMask.LastIndexOf('\\') < 0)
+                {
+                    // User likely provided a file mask similar to z:*.raw
+                    // Auto-switch to z:\*.raw
+                    fileMask = fileMask.Replace(":", @":\");
+                }
+
                 var slashIndex = fileMask.LastIndexOf('\\');
                 if (slashIndex > -1)
                 {
