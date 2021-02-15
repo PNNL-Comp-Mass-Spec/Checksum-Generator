@@ -192,7 +192,7 @@ namespace Checksum_Generator
                 {
                     // Set this to negative one to account for the header line
                     var filesProcessed = -1;
-                    var FILES_TO_SHOW = 4;
+                    const int FILES_TO_SHOW = 4;
 
                     while (!reader.EndOfStream)
                     {
