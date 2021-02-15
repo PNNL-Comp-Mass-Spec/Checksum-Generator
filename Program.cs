@@ -8,8 +8,9 @@ namespace Checksum_Generator
 {
     internal static class Program
     {
-        private const string PROGRAM_DATE = "October 16, 2018";
+        // Ignore Spelling: yyyy-MM-dd
 
+        private const string PROGRAM_DATE = "February 15, 2021";
 
         private static string mFileMask;
         private static bool mRecurse;
@@ -340,9 +341,9 @@ namespace Checksum_Generator
 
                 Console.WriteLine();
                 Console.WriteLine("FileMask specifies the files to compute the checksums, for example, *.raw");
-                Console.WriteLine(@"FileMask can optionally include a folder path, e.g. C:\temp\*.raw");
+                Console.WriteLine(@"FileMask can optionally include a directory path, e.g. C:\temp\*.raw");
                 Console.WriteLine();
-                Console.WriteLine("Use /S to process files in all subfolders");
+                Console.WriteLine("Use /S to process files in all subdirectories");
                 Console.WriteLine("Use /O to specify the output file path for the checksum file");
                 Console.WriteLine("Use /F to write full file paths to the output file");
                 Console.WriteLine("Use /Preview to view files that would be processed");
