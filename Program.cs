@@ -10,7 +10,6 @@ namespace Checksum_Generator
     {
         private const string PROGRAM_DATE = "October 16, 2018";
 
-        static double mPercentComplete;
 
         private static string mFileMask;
         private static bool mRecurse;
@@ -176,8 +175,8 @@ namespace Checksum_Generator
                             writer.WriteLine(md5 + "\t" + sha1 + "\t" + currentFile.Length + "\t" + currentFile.Name);
 
                         filesProcessed++;
-                        mPercentComplete = filesProcessed / (float)fiFiles.Length * 100;
-                        Console.WriteLine(mPercentComplete.ToString("0.0") + "%: " + fiFile.Name);
+                        var percentComplete = filesProcessed / (float)foundFiles.Length * 100;
+                        Console.WriteLine(percentComplete.ToString("0.0") + "%: " + currentFile.Name);
                     }
 
                 }
