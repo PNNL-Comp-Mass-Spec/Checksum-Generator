@@ -6,7 +6,7 @@ using PRISM;
 
 namespace Checksum_Generator
 {
-    class Program
+    internal static class Program
     {
         private const string PROGRAM_DATE = "October 16, 2018";
 
@@ -19,7 +19,7 @@ namespace Checksum_Generator
 
         private static bool mPreviewMode;
 
-        static int Main()
+        public static int Main()
         {
             var commandLineParser = new clsParseCommandLine();
 
