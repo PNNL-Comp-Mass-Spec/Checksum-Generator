@@ -19,8 +19,9 @@ namespace Checksum_Generator
             set;
         }
 
-        private SHA1Managed mSHA1Hasher;
-        private MD5 mMD5Hasher;
+        private readonly MD5 mMD5Hasher;
+
+        private readonly SHA1Managed mSHA1Hasher;
 
         /// <summary>
         /// Constructor
@@ -29,6 +30,9 @@ namespace Checksum_Generator
         {
             ErrorMessage = string.Empty;
             ThrowEvents = false;
+
+            mMD5Hasher = MD5.Create();
+            mSHA1Hasher = new SHA1Managed();
         }
 
         public string GenerateMD5Hash(string filePath)
@@ -47,8 +51,6 @@ namespace Checksum_Generator
                 return string.Empty;
             }
 
-            if (mMD5Hasher == null)
-                mMD5Hasher = MD5.Create();
 
             using (var sourceFile = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -81,11 +83,6 @@ namespace Checksum_Generator
                     throw new FileNotFoundException();
 
                 return string.Empty;
-            }
-
-            if (mSHA1Hasher == null)
-            {
-                mSHA1Hasher = new SHA1Managed();
             }
 
             using (var sourceFile = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
