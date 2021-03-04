@@ -69,7 +69,6 @@ namespace Checksum_Generator
 
         public string GenerateSha1Hash(string filePath)
         {
-            byte[] fileHash;
             var targetFile = new FileInfo(filePath);
 
             if (!targetFile.Exists)
@@ -82,14 +81,11 @@ namespace Checksum_Generator
                 return string.Empty;
             }
 
-            using (var sourceFile = new FileStream(targetFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                fileHash = mSHA1Hasher.ComputeHash(sourceFile);
-            }
+            using var sourceFile = new FileStream(targetFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var hashString = ToHexString(fileHash);
+            var fileHash = mSHA1Hasher.ComputeHash(sourceFile);
 
-            return hashString;
+            return ToHexString(fileHash);
         }
 
         /// <summary>

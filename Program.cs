@@ -10,7 +10,7 @@ namespace Checksum_Generator
     {
         // Ignore Spelling: yyyy-MM-dd
 
-        private const string PROGRAM_DATE = "February 15, 2021";
+        private const string PROGRAM_DATE = "February 24, 2021";
 
         private static string mFileMask;
         private static bool mRecurse;
@@ -195,33 +195,32 @@ namespace Checksum_Generator
                 Console.WriteLine("Results:");
 
                 // Re-open the file and show the first 5 lines
-                using (var reader = new StreamReader(new FileStream(outputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                using var reader = new StreamReader(new FileStream(outputFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+                // Set this to negative one to account for the header line
+                var filesShown = -1;
+                const int FILES_TO_SHOW = 4;
+
+                while (!reader.EndOfStream)
                 {
-                    // Set this to negative one to account for the header line
-                    var filesProcessed = -1;
-                    const int FILES_TO_SHOW = 4;
+                    var dataLine = reader.ReadLine();
+                    if (string.IsNullOrWhiteSpace(dataLine))
+                        continue;
 
-                    while (!reader.EndOfStream)
+                    filesShown++;
+                    if (filesShown <= FILES_TO_SHOW)
                     {
-                        var dataLine = reader.ReadLine();
-                        if (string.IsNullOrWhiteSpace(dataLine))
-                            continue;
-
-                        filesProcessed++;
-                        if (filesProcessed <= FILES_TO_SHOW)
-                        {
-                            Console.WriteLine(dataLine);
-                        }
+                        Console.WriteLine(dataLine);
                     }
+                }
 
-                    var additionalFiles = filesProcessed - FILES_TO_SHOW;
-                    if (additionalFiles > 0)
-                    {
-                        if (additionalFiles == 1)
-                            Console.WriteLine("... plus 1 more file");
-                        else
-                            Console.WriteLine("... plus " + additionalFiles + " others");
-                    }
+                var additionalFiles = filesShown - FILES_TO_SHOW;
+                if (additionalFiles > 0)
+                {
+                    if (additionalFiles == 1)
+                        Console.WriteLine("... plus 1 more file");
+                    else
+                        Console.WriteLine("... plus " + additionalFiles + " others");
                 }
 
                 return true;
