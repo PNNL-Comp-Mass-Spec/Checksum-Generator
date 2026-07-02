@@ -44,3 +44,8 @@ Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://www.pnnl.gov/integra
 Checksum Generator is licensed under the Apache License, Version 2.0; you may not use this
 file except in compliance with the License.  You may obtain a copy of the
 License at https://opensource.org/licenses/Apache-2.0
+
+# Archive Notice
+
+This repository has been archived and is no longer maintained.
+The code is provided for historical reference and may contain unpatched or unknown vulnerabilities.
