@@ -8,9 +8,9 @@ namespace Checksum_Generator
 {
     internal static class Program
     {
-        // Ignore Spelling: yyyy-MM-dd
+        // Ignore Spelling: checksums, Richland, yyyy-MM-dd
 
-        private const string PROGRAM_DATE = "February 24, 2021";
+        private const string PROGRAM_DATE = "July 1, 2026";
 
         private static string mFileMask;
         private static bool mRecurse;
@@ -244,7 +244,7 @@ namespace Checksum_Generator
 
         private static string GetAppVersion()
         {
-            return PRISM.FileProcessor.ProcessFilesOrDirectoriesBase.GetAppVersion(PROGRAM_DATE);
+            return PRISM.AppUtils.GetAppVersion(PROGRAM_DATE);
         }
 
         private static bool SetOptionsUsingCommandLineParameters(clsParseCommandLine commandLineParser)
